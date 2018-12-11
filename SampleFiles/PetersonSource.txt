@@ -1,0 +1,35 @@
+class Peterson extends AlgorithmThread
+{
+	shared int[] level = new int[N];
+	shared int[] slowest = new int[N];
+	int round;
+	int j;
+	
+	public void algorithm()
+	{
+		for(round = 1; round < N; round = round+1)
+		{
+			level[ID] = round;
+			slowest[round] = ID;
+			
+			wait:
+			while(true)
+			{
+				if(slowest[round] != ID)
+				{
+					break wait;
+				}
+				for( j = 0; j < N; j = j+1)
+				{
+					if(j != ID && level[j] >= round)
+					{
+						continue wait;
+					}
+				}
+				break wait;
+			}
+		}
+		CriticalSection();
+		level[ID] = 0;
+	}
+}

@@ -1,0 +1,35 @@
+class Dijkstra extends AlgorithmThread
+{
+	shared boolean[] racing = new boolean[N+1];
+	shared boolean[] hasWon = new boolean[N+1];
+	shared int winner;
+	int j;
+	
+	public void algorithm()
+	{
+		racing[ID]=true;
+		entry:
+		while(true)
+		{
+		    if(winner!=ID)
+		    {
+		        while(racing[winner]){}
+		        winner=ID;
+		    }
+		    hasWon[ID]=true;
+		    for(j=0;j<N;j=j+1)
+		    {
+		        if(hasWon[j]&&j!=ID)
+		        {
+		            hasWon[ID]=false;
+		            continue entry;
+		        }
+		    }
+		    break entry;
+		}
+		CriticalSection();
+		winner = N;
+		hasWon[ID] = false;
+		racing[ID] = false;
+	}
+}

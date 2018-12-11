@@ -1,0 +1,40 @@
+class TaubenfeldBuhr extends AlgorithmThread
+{
+	shared int depth = (int)Math.ceil(Math.log(N)/Math.log(2));
+	shared int width = 1 << depth;
+	
+	shared boolean[][] intents;
+	shared int[][] turns;
+	
+	int level;
+	
+	public void initializeShared(){
+		intents = new boolean[depth][];
+		for(int i=0; i<intents.length; i++)
+			intents[i] = new boolean[width >> i];
+		
+		turns = new int[depth][];
+		for(int i=0; i<intents.length; i++)
+			turns[i] = new int[width >> (i+1)];
+	}
+	
+	public void algorithm(){
+		int localID = ID;
+		
+		for(level = 0; level < depth; level = level+1){
+		    int turnID = localID >> 1;
+		    intents[level][localID] = true;
+		    turns[level][turnID] = localID;
+		    
+		    while(intents[level][localID ^ 1] &&
+		        turns[level][turnID] == localID)
+		    {}
+		    
+		    localID = localID >> 1;
+		}
+		CriticalSection();
+		for(level = depth-1; level >= 0; level = level - 1){
+		    intents[level][ID >> level] = false;
+		}
+	}
+}

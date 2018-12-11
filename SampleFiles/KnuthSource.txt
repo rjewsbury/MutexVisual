@@ -1,0 +1,46 @@
+class Knuth extends AlgorithmThread
+{
+	shared boolean[] intent = new boolean[N];
+	shared boolean[] passed = new boolean[N];
+	shared int turn;
+	int j;
+
+	public void algorithm()
+	{
+		intent[ID] = true;
+		entry:
+		while(true)
+		{
+			waitTurn: 
+			while(true)
+			{
+				for(j = turn; j != ID; j = (j + 1) % N)
+				{
+					if(intent[j])
+					{
+						//someone is before us in the priority
+						continue waitTurn;
+					}
+				}
+				//we got past the continues, so we must be first
+				break;
+			}
+			passed[ID] = true;
+			for(j = 0; j < N; j = j + 1)
+			{
+				if(passed[j] && j != ID)
+				{
+					//somebody else thinks they're first. start over
+					passed[ID] = false;
+					continue entry;
+				}
+			}
+			//nobody else thinks they've won, so now we can enter the CS!
+			break;
+		}
+		CriticalSection();
+		turn = (ID + 1) % N;
+		passed[ID] = false;
+		intent[ID] = false;
+	}
+}

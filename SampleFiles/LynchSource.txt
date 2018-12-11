@@ -1,0 +1,30 @@
+class Lynch extends AlgorithmThread
+{
+	//maximum depth of the lock tree
+	//java doesn't have log base 2
+	shared int depth = (int)Math.ceil(Math.log(N)/Math.log(2));
+	shared int width = 1 << depth;
+	shared int mask = width - 1;
+	
+	shared int intents[] = new int[N];
+	shared int[] turns = new int[width];
+	
+	public void algorithm()
+	{
+		for(int km1 = 0, k = 1; k <= depth; km1++, k += 1)
+		{
+			int lid = ID >> km1;
+			int comp = (lid >> 1) + (width >> k);
+			int role = lid & 1;
+			intents[ID] = k;
+			turns[comp] = role;
+			int low = (lid ^ 1) << km1;
+			int high = Math.min(low | mask >> (depth - km1), N - 1);
+			for( int i = low; i <= high; i += 1)
+				while( intents[i] >= k && turns[comp] == role){}
+		}
+		
+		CriticalSection();
+		intents[ID] = 0;
+	}
+}
