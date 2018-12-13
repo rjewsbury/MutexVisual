@@ -11,6 +11,7 @@ import mutex.display.ElementController;
 import mutex.display.controllers.CustomDisplay;
 import mutex.io.CompiledFile;
 import mutex.io.CompiledFileListener;
+import mutex.io.PopupManager;
 import mutex.simulator.model.*;
 import mutex.simulator.view.*;
 
@@ -295,6 +296,10 @@ public class SimulatorFrame extends JFrame implements ActionListener, ControlLis
 		} catch (InvocationTargetException | NoSuchMethodException
 				| InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
+		} catch (UnsupportedClassVersionError e) {
+			PopupManager.errorMessage("This file was compiled with a newer version of java:\n"
+					+ e.getClass().getName()+"\n"
+					+ e.getMessage());
 		}
 	}
 

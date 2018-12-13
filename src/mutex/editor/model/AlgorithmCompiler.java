@@ -26,7 +26,9 @@ public class AlgorithmCompiler implements Closeable
 			//in an attempt to allow the editor to be run by JREs as well as JDKs,
 			//I tried including tools.jar from a JDK as a direct dependency
 			//however, in Java 1.9 they switched to using implementation-specific libs
-			//I'm leaving this here for now, in case a better solution is found
+			//I'm leaving this here as a comment for now, in case a better solution is found
+
+			/*
 			if(version.startsWith("1.8")) {
 				System.out.println("Using 1.8 tools.");
 				// this line gets flagged by my IDE, but it compiles fine,
@@ -36,6 +38,8 @@ public class AlgorithmCompiler implements Closeable
 			else {
 				throw new Exception("Could not get the Java Compiler. Must be running JDK.");
 			}
+			*/
+			throw new Exception("Could not get the Java Compiler. Must be running JDK.");
         }
 		else {
             System.out.println("Got System Compiler");
