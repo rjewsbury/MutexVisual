@@ -1,6 +1,6 @@
 .idea
 .settings
-ConcurrencyVisual.iml
+*.iml
 .project
 .classpath
 tools.jar
