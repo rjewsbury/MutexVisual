@@ -1,9 +1,6 @@
 # Mutex Algorithm Viewer
 This project is a visualization and experimentation tool for concurrent algorithms.
 
-## Setup
-This project requires JDK 8 to run since `javac` is used within it. Most IDEs only import the JRE, and so you may experience issue compiling the program. You will need to link `tools.jar` into the project, which is located in the JDK 8 folder (`Drive:/Program Files/jdk1.8.x_z/lib/`).
-
 ## User Guide
 
 ### Table of Contents
