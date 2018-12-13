@@ -1,6 +1,7 @@
 package mutex.simulator.model;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 
 /**
  * A wrapper object for values and arrays of values
@@ -36,5 +37,15 @@ public class Wrapper
 	public int getDimension()
 	{
 		return arrayDimension;
+	}
+
+	public String toString() {
+		if(myVariable.getClass().isArray())
+			try{
+				return Arrays.toString((Object[])myVariable);
+			}catch(ClassCastException e){
+				e.printStackTrace();
+			}
+		return myVariable.toString();
 	}
 }

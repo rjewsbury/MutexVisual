@@ -25,11 +25,19 @@ public class AlgorithmThreadGroup
 		resetGroup(size);
 	}
 
+	public void stopThreads() {
+		if(myThreads != null) {
+			for(AlgorithmThread thread : myThreads){
+				thread.stop();
+			}
+		}
+	}
+
 	public void resetGroup(int size) throws
 			IllegalAccessException, InvocationTargetException,
 			InstantiationException, NoSuchMethodException {
 		if(myThreads != null) {
-			//deal with cleanup
+			stopThreads();
 		}
 		else {
 			myThreads = new AlgorithmThread[size];

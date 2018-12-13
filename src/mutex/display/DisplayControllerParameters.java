@@ -37,6 +37,7 @@ public class DisplayControllerParameters implements Serializable {
     }
 
     public void setEditableFields(ArrayList<Field> editableFields) {
-        this.myEditableFields = editableFields;
+        if(editableFields != null)
+            this.myEditableFields = editableFields;
     }
 }

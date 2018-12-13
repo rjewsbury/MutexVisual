@@ -161,8 +161,10 @@ public abstract class AlgorithmThread implements Runnable
 	public void stop()
 	{
 		running = false;
-		myThread.interrupt();
-		myThread = null;
+		if(myThread != null) {
+			myThread.interrupt();
+			myThread = null;
+		}
 	}
 	
 	protected abstract void algorithm() throws InterruptedException;

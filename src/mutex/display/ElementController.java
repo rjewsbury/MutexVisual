@@ -49,7 +49,8 @@ public abstract class ElementController implements Editable
 
 	public DisplayControllerParameters getParameters() {
 		DisplayControllerParameters params = new DisplayControllerParameters();
-		params.setEditableFields(new ArrayList<Field>(getEditableFields()));
+		if(getEditableFields() != null)
+			params.setEditableFields(new ArrayList<Field>(getEditableFields()));
 
 		//if I ever add more preset display types, I will need to update this
 		if(this instanceof DefaultDisplay)

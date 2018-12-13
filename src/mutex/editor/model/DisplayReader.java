@@ -62,7 +62,7 @@ public class DisplayReader {
             Pattern className = Pattern.compile(CLASS_REGEX);
             Matcher match = className.matcher(myCode);
             if(!match.find())
-                throw new RuntimeException("Illegal Syntax: missing class name.");
+                throw new RuntimeException("Illegal Syntax: missing a display class name.");
 
             //the class name is the word that follows "class"
             myClassName = match.group().split("class\\s+",2)[1].split("(\\s+|\\{)",2)[0];

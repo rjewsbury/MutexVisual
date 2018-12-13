@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Queue;
 import java.util.Random;
 
 import javax.swing.JSlider;
@@ -47,7 +48,7 @@ public class ThreadController implements Runnable, ControlListener
 		setThreadGroup(threads);
 
 		modelRunning = false;
-		pauseCritical = false;
+		pauseCritical = true;
 		myDelay = DelaySlider.INIT;
 		myRNG = new Random();
 		myUpdateListeners = new ArrayList<>();
@@ -137,26 +138,29 @@ public class ThreadController implements Runnable, ControlListener
 		else
 			ID = threadID;
 
-
-		//waits for the thread to reach the next pause
-		if(myThreads.getThread(ID).getException() == null) {
-			//System.out.println("Stepping! "+ID);
-			myThreads.getThread(ID).allowStep();
+        AlgorithmThread thread = myThreads.getThread(ID);
+        //waits for the thread to reach the next pause
+		if(thread.getException() == null) {
+//            System.out.println("Thread: "+ID+
+//                    " Step: "+thread.getStepNumber()+
+//                    " Shared: "+thread.getSharedVariables()+
+//                    " Members: "+thread.getVariables());
+			thread.allowStep();
 		}
 
 		//if an exception was thrown,
-		if(myThreads.getThread(ID).getException() != null) {
+		if(thread.getException() != null) {
 			System.out.println("Error! Thread "+ID);
 
 			modelRunning = false;
 
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			PrintStream ps = new PrintStream(os);
-			myThreads.getThread(ID).getException().printStackTrace(ps);
+			thread.getException().printStackTrace(ps);
 			PopupManager.errorMessage(os.toString());
 		}
 		
-		updateListeners(myThreads.getThread(ID));
+		updateListeners(thread);
 	}
 
 	public boolean mutualExclusionBroken() {
@@ -178,8 +182,10 @@ public class ThreadController implements Runnable, ControlListener
 	{
 		modelRunning = true;
 
-		//check if mutual exclusion is broken
-		while(modelRunning && (!pauseCritical || !mutualExclusionBroken()))
+		// check if mutual exclusion is broken every loop
+        // executes at least once so that hitting run while
+        // mutual exclusion is already broken tries to fix it
+		do
 		{
 			step(-1);
 			
@@ -188,7 +194,12 @@ public class ThreadController implements Runnable, ControlListener
 			}catch (InterruptedException e){
 				e.printStackTrace();
 			}
-		}
+		} while(modelRunning && (!pauseCritical || !mutualExclusionBroken()));
+
+		if(pauseCritical && mutualExclusionBroken())
+		    PopupManager.warningMessage("Mutual Exclusion Broken.\n" +
+                    "Consider adding print statements to determine the cause,\n" +
+                    "or disable this warning in the Control menu.");
 
 		modelRunning = false;
 		sendAction(RunMenu.STOP_MESSAGE);

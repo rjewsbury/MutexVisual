@@ -4,3 +4,5 @@ ConcurrencyVisual.iml
 .project
 .classpath
 tools.jar
+META-INF
+SIM-META

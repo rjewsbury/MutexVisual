@@ -1,12 +1,6 @@
 package mutex.io;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -92,6 +86,11 @@ public class SourceFile implements Serializable
 		}
 		catch (ClassNotFoundException e){
 			e.printStackTrace();
+		}
+		catch (IOException e) {
+			PopupManager.errorMessage("Error reading file:\n"
+					+ e.getClass().getName()+"\n"
+					+ e.getMessage());
 		}
 	}
 	

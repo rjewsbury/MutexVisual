@@ -59,6 +59,14 @@ public class SimulatorFrame extends JFrame implements ActionListener, ControlLis
 		//resizing things is terrible to deal with anyway
 		//setResizable(false);
 
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				myThreadController.stop();
+				myThreadGroup.stopThreads();
+			}
+		});
+
 		try {
 			setParameters(params);
 		} catch (InvocationTargetException e) {
@@ -150,6 +158,8 @@ public class SimulatorFrame extends JFrame implements ActionListener, ControlLis
 			myAlgorithmClass = DefaultThread.class;
 		}
 
+		if(myThreadGroup != null)
+			myThreadGroup.stopThreads();
 		myThreadGroup = new AlgorithmThreadGroup(myAlgorithmClass,params.getNumThreads());
 
 		if(params.getDisplay() != null) {
@@ -197,6 +207,8 @@ public class SimulatorFrame extends JFrame implements ActionListener, ControlLis
 			InstantiationException, IllegalAccessException {
 		myParameters.setNumThreads(size);
 
+		if(myThreadGroup != null)
+			myThreadGroup.stopThreads();
 		myThreadGroup = new AlgorithmThreadGroup(myAlgorithmClass, size);
 
 		myThreadController.setThreadGroup(myThreadGroup);

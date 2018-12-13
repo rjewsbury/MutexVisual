@@ -75,10 +75,15 @@ public class DisplayCodePanel extends CodePanel {
             "	}\n" +
             "	\n" +
             "	public void update(AlgorithmThread updated)\n" +
-            "	{\n" +
-            "		int ID = updated.getID();\n" +
+            "	{\n"+
+            "		// casting allows the thread to access the auto-generated getters.\n"+
+            "		// e.g. \"shared int var\" generates \"thread.getVar()\"\n"+
+            "		AlgorithmName thread = (AlgorithmName) updated;\n"+
+            "		int ID = thread.getID();\n"+
+            "		boolean inCritical = thread.isInCritical();\n"+
             "\n" +
-            "		if(!updated.isInCritical()){\n" +
+            "		if(!inCritical)\n"+
+            "		{"+
             "			//move the thread to the front of the NCS list\n" +
             "			myThreads[ID].setContainer(ncs);\n" +
             "			ncs.addFirst(myThreads[ID]);\n" +

@@ -67,6 +67,7 @@ public class AlgorithmWriter
 	private static final String COMMENT_REGEX = "//.*?(\\R)";
 	private static final String VAR_SYMBOL_REGEX = "(?<![a-zA-Z0-9_$])";
 	private static final String VAR_SYMBOLS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$";
+	private static final String MIXED_OP_REGEX = "(\\+\\+|--|\\+=|-=|\\*=|/=|%=|<<=|>>=|&=|^=|\\|=)";
 	
 	private AlgorithmReader myReader;
 	private String[] myPauseVariables;
@@ -489,6 +490,16 @@ public class AlgorithmWriter
 		
 		return result;
 	}
+
+	private boolean hasMixedOp(String code, String var) {
+		//++ and += include both a read and a write, and also the order matters??
+		//assignment operators have a fixed order, but I'd still rather deal with them later
+		//there's probably some way to parse them, but I would rather not deal with it
+		if(code.replaceAll(var+READ_REGEX+"\\s*"+MIXED_OP_REGEX,"")
+				.length() < code.length())
+			return true;
+		return false;
+	}
 	
 	/**
 	 * Takes a normal algorithm and modifies it to work within the simulator.
@@ -510,16 +521,6 @@ public class AlgorithmWriter
 		//removes " //___(newline)" and leaves "(newline)"
 		modifiedCode = modifiedCode.replaceAll(COMMENT_REGEX, "$1");
 		
-		//++ and -- include both a read and a write, and also the order matters??
-		//assignment operators have a fixed order, but I'd still rather deal with them later
-		//there's probably some way to parse them, but I would rather not deal with it
-		if(modifiedCode.replaceAll("(\\+\\+|--|\\+=|-=|\\*=|/=|%=|<<=|>>=|&=|^=|\\|=)","")
-				.length() < modifiedCode.length())
-			throw new IllegalArgumentException(
-					"++, --, += and other special assignments cannot be parsed\n"+
-					"Instead, please use separate operations. e.g.:\n"+
-					"\tnumber = number + 1;");
-		
 		//replace each step. marks step numbers temporarily with "%d"
 		//modifiedCode[index] = line.replaceAll("\\[(.+?)\\]", ".getVariable($1)");
 		for(String pauseVar: pauseVars)
@@ -528,7 +529,15 @@ public class AlgorithmWriter
 			//if there is a nested read of the same variable, this breaks.
 			//eg. turn[turn[0]]
 			//also, nested array lookups in general will break, because regex can't match brackets
-			
+
+			//check for mixed ops
+			if(hasMixedOp(modifiedCode, pauseVar))
+				throw new IllegalArgumentException(
+						"++, --, += and other special assignments on shared vars cannot be parsed,\n"+
+								"because they implicitly involve both a read and a write.\n"+
+								"Instead, please use separate operations. e.g.:\n"+
+								"\tnumber = number + 1;");
+
 			//replace all variable writes
 			//matches: variable[optional index] =
 			//				expression(does not contain equals) (semicolon or "){")
@@ -544,6 +553,13 @@ public class AlgorithmWriter
 		}
 		for(String nonPauseVar: nonPauseVars)
 		{
+			//check for mixed ops
+			if(hasMixedOp(modifiedCode, nonPauseVar))
+				throw new IllegalArgumentException(
+						"++, --, += and other special assignments on member vars cannot be parsed,\n"+
+								"because they implicitly involve both a read and a write.\n"+
+								"Instead, please use separate operations. e.g.:\n"+
+								"\tnumber = number + 1;");
 			//replace all variable writes
 			modifiedCode = modifiedCode.replaceAll(
 					VAR_SYMBOL_REGEX +nonPauseVar+WRITE_REGEX,

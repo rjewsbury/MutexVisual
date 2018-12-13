@@ -2,8 +2,9 @@ package mutex.editor.model;
 
 public class ExampleCode {
     public static final String EXAMPLE_1 =
-            "class Example1"								+System.lineSeparator()
+            "class Example1 extends AlgorithmThread"					+System.lineSeparator()
                     + "{"												+System.lineSeparator()
+                    + " // please set the display type to \"Blank\" in Settings"+System.lineSeparator()
                     + "	// Shared variables are marked by the \"shared\" keyword."+System.lineSeparator()
                     + "	// They can be read or written atomically by any thread"+System.lineSeparator()
                     + "	shared int index = 0;"							+System.lineSeparator()
@@ -57,8 +58,10 @@ public class ExampleCode {
                     + "}";
 
     public static final String EXAMPLE_2 =
-            "class Example2"									+System.lineSeparator()
+            "class Example2 extends AlgorithmThread"					+System.lineSeparator()
                     + "{"												+System.lineSeparator()
+                    + " // please set the display type to \"Blank\" in Settings"+System.lineSeparator()
+                    + " "                                               +System.lineSeparator()
                     + "	// Variables can be linked to a display"		+System.lineSeparator()
                     + "	// and influence how the display acts."			+System.lineSeparator()
                     + "	"												+System.lineSeparator()
@@ -89,8 +92,10 @@ public class ExampleCode {
                     + "}";
 
     public static final String EXAMPLE_3 =
-            "class Example3"								+System.lineSeparator()
+            "class Example3 extends AlgorithmThread"					+System.lineSeparator()
                     + "{"												+System.lineSeparator()
+                    + " // please set the display type to \"Blank\" in Settings"+System.lineSeparator()
+                    + " "                                               +System.lineSeparator()
                     + "	shared int[][] bracket;"						+System.lineSeparator()
                     + "	"												+System.lineSeparator()
                     + "	boolean even;"									+System.lineSeparator()
@@ -145,37 +150,37 @@ public class ExampleCode {
             "	void algorithm()"+System.lineSeparator()+
             "	{"+System.lineSeparator()+
             "		intent[ID] = true;"+System.lineSeparator()+
-            "        entry:"+System.lineSeparator()+
-            "        while(true)"+System.lineSeparator()+
-            "        {"+System.lineSeparator()+
-            "            waitTurn:"+System.lineSeparator()+
-            "            while(true)"+System.lineSeparator()+
-            "            {"+System.lineSeparator()+
-            "                for(j = turn; j!=ID; j = (j+1)%N)"+System.lineSeparator()+
-            "                {"+System.lineSeparator()+
-            "                    if(intent[j])"+System.lineSeparator()+
-            "                    {"+System.lineSeparator()+
-            "                        //goto waitTurn"+System.lineSeparator()+
-            "                        continue waitTurn;"+System.lineSeparator()+
-            "                    }"+System.lineSeparator()+
-            "                }"+System.lineSeparator()+
-            "                break;"+System.lineSeparator()+
-            "            }"+System.lineSeparator()+
-            "            passed[ID] = true;"+System.lineSeparator()+
-            "            for(j=0; j<N; j = j + 1)"+System.lineSeparator()+
-            "            {"+System.lineSeparator()+
-            "                if(passed[j] && j != ID)"+System.lineSeparator()+
-            "                {"+System.lineSeparator()+
-            "                    passed[ID] = false;"+System.lineSeparator()+
-            "                    continue entry;"+System.lineSeparator()+
-            "                }"+System.lineSeparator()+
-            "            }"+System.lineSeparator()+
-            "            break;"+System.lineSeparator()+
-            "        }"+System.lineSeparator()+
-            "        CriticalSection();"+System.lineSeparator()+
-            "        turn = (ID+1)%N;"+System.lineSeparator()+
-            "        passed[ID] = false;"+System.lineSeparator()+
-            "        intent[ID] = false;"+System.lineSeparator()+
-            "	}"+System.lineSeparator()+
+            "		entry:"+System.lineSeparator()+
+            "		while(true)"+System.lineSeparator()+
+            "		{"+System.lineSeparator()+
+            "			waitTurn:"+System.lineSeparator()+
+            "			while(true)"+System.lineSeparator()+
+            "			{"+System.lineSeparator()+
+            "				for(j = turn; j!=ID; j = (j+1)%N)"+System.lineSeparator()+
+            "				{"+System.lineSeparator()+
+            "					if(intent[j])"+System.lineSeparator()+
+            "					{"+System.lineSeparator()+
+            "						//goto waitTurn"+System.lineSeparator()+
+            "						continue waitTurn;"+System.lineSeparator()+
+            "					}"+System.lineSeparator()+
+            "				}"+System.lineSeparator()+
+            "				break;"+System.lineSeparator()+
+            "			}"+System.lineSeparator()+
+            "			passed[ID] = true;"+System.lineSeparator()+
+            "			for(j=0; j<N; j = j + 1)"+System.lineSeparator()+
+            "			{"+System.lineSeparator()+
+            "				if(passed[j] && j != ID)"+System.lineSeparator()+
+            "				{"+System.lineSeparator()+
+            "					passed[ID] = false;"+System.lineSeparator()+
+            "					continue entry;"+System.lineSeparator()+
+            "				}"+System.lineSeparator()+
+            "			}"+System.lineSeparator()+
+            "			break;"+System.lineSeparator()+
+            "		}"+System.lineSeparator()+
+            "		CriticalSection();"+System.lineSeparator()+
+            "		turn = (ID+1)%N;"+System.lineSeparator()+
+            "		passed[ID] = false;"+System.lineSeparator()+
+            "		intent[ID] = false;"+System.lineSeparator()+
+            "   {"+System.lineSeparator()+
             "}";
 }

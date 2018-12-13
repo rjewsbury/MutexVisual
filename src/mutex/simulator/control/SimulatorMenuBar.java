@@ -153,7 +153,7 @@ public class SimulatorMenuBar extends JMenuBar implements ActionListener
 
 		tempItem = new JCheckBoxMenuItem(SimulatorFrame.PAUSE_CRITICAL);
 		tempItem.addActionListener(this);
-		((JCheckBoxMenuItem) tempItem).setState(false);
+		((JCheckBoxMenuItem) tempItem).setState(true);
 		viewMenu.add(tempItem);
 
 		return viewMenu;

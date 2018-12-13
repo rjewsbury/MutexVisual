@@ -137,7 +137,9 @@ public class EditorFrame extends JFrame implements ActionListener, SourceFileLis
 	private AlgorithmClassLoader getAlgorithmClassLoader() {
 		//gather all the data required for compilation
 		AlgorithmReader reader = new AlgorithmReader(myCode.getText());
-		DisplayReader displayReader = new DisplayReader(myDisplayCode.getText());
+		DisplayReader displayReader = null;
+		if(myParameters.getDisplayType() == DisplayType.CUSTOM)
+			displayReader = new DisplayReader(myDisplayCode.getText());
 		AlgorithmWriter writer = new AlgorithmWriter(reader);
 		AlgorithmClassLoader loader = null;
 		String source;
@@ -179,7 +181,6 @@ public class EditorFrame extends JFrame implements ActionListener, SourceFileLis
 									+System.lineSeparator()+e1.getMessage());
 					return null;
 				}
-				displaySource = displayReader.getCompilableSource();
 
 //				System.out.println(source);
 //				CodeConstants constants = writer.buildConstants();
@@ -193,7 +194,7 @@ public class EditorFrame extends JFrame implements ActionListener, SourceFileLis
 
 				//if a custom display is being used, add the display to the compile list
 				if(myParameters.getDisplayType() == DisplayType.CUSTOM) {
-
+					displaySource = displayReader.getCompilableSource();
 					sources.put(displayReader.getFileName(), displaySource);
 				}
 
@@ -251,7 +252,9 @@ public class EditorFrame extends JFrame implements ActionListener, SourceFileLis
 	private void compileAndRun() {
 		AlgorithmReader reader = new AlgorithmReader(myCode.getText());
 		AlgorithmWriter writer = new AlgorithmWriter(reader);
-		DisplayReader displayReader = new DisplayReader(myDisplayCode.getText());
+		DisplayReader displayReader = null;
+		if(myParameters.getDisplayType() == DisplayType.CUSTOM)
+			displayReader = new DisplayReader(myDisplayCode.getText());
 		AlgorithmClassLoader loader = getAlgorithmClassLoader();
 
 		if(loader != null)
@@ -336,6 +339,8 @@ public class EditorFrame extends JFrame implements ActionListener, SourceFileLis
 
 		if(myParameters.getDisplayType() == DisplayType.CUSTOM)
 			file.setDisplayCode(myDisplayCode.getText());
+		else
+			file.setDisplayCode("");
 	}
 
 	@Override
