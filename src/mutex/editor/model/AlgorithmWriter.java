@@ -68,11 +68,17 @@ public class AlgorithmWriter
 	private static final String VAR_SYMBOL_REGEX = "(?<![a-zA-Z0-9_$])";
 	private static final String VAR_SYMBOLS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$";
 	private static final String MIXED_OP_REGEX = "(\\+\\+|--|\\+=|-=|\\*=|/=|%=|<<=|>>=|&=|^=|\\|=)";
+	private static final String PRIMITIVE_REGEX = "char|boolean|byte|short|int|long|float|double";
 	
 	private AlgorithmReader myReader;
 	private String[] myPauseVariables;
 	private String[] myNonPauseVariables;
-	
+
+	//used to cast boxed types back to primitives
+	//avoids issues with comparing primitives using "=="
+	private String[] myPauseVarConversion;
+	private String[] myNonPauseVarConversion;
+
 	public AlgorithmWriter(AlgorithmReader reader)
 	{
 		myReader = reader;
@@ -88,56 +94,68 @@ public class AlgorithmWriter
 	public void setPauseVars(String[] vars)
 	{
 		ArrayList<String> pauseVars = new ArrayList<>();
+		ArrayList<String> pauseVarConversion = new ArrayList<>();
 		ArrayList<String> nonPauseVars = new ArrayList<>();
+		ArrayList<String> nonPauseVarConversion = new ArrayList<>();
 		
 		String[] names = new String[vars.length];
 		String[] sharedVars = myReader.getSharedVariables();
 		String[] memberVars = myReader.getMemberVariables();
 		
 		String var;
+		String conversion;
 		String[] tokens;
 		for(int i=0; i<names.length; i++){
 			//removes all type information from the given name
 			tokens = vars[i].replaceAll("\\[|]", "").split("\\s+");
 			names[i] = tokens[tokens.length-1];
 		}
-		
-		sharedSearch:
-		for (String sharedVar : sharedVars) {
-			tokens = sharedVar.replaceAll("\\[|]", "").split("\\s+");
-			var = tokens[tokens.length - 1];
-			//search for the variable name
-			for (String name : names) {
-				if (var.equals(name)) {
-					pauseVars.add(var);
-					//found it, so move on
-					continue sharedSearch;
-				}
-			}
-			//didn't find it
-			nonPauseVars.add(var);
-		}
-		
-		memberSearch:
-		for (String memberVar : memberVars) {
-			tokens = memberVar.replaceAll("\\[|]", "").split("\\s+");
-			var = tokens[tokens.length - 1];
-			//search for the variable name
-			for (String name : names) {
-				if (var.equals(name)) {
-					pauseVars.add(var);
-					//found it, so move on
-					continue memberSearch;
-				}
-			}
-			//didn't find it
-			nonPauseVars.add(var);
-		}
-		
+
+		// search through vars for matches and populate the lists
+		searchVars(names,sharedVars,pauseVars,pauseVarConversion,nonPauseVars,nonPauseVarConversion);
+		searchVars(names,memberVars,pauseVars,pauseVarConversion,nonPauseVars,nonPauseVarConversion);
+
 		myPauseVariables = new String[pauseVars.size()];
 		myNonPauseVariables = new String[nonPauseVars.size()];
 		pauseVars.toArray(myPauseVariables);
 		nonPauseVars.toArray(myNonPauseVariables);
+
+		myPauseVarConversion = new String[pauseVarConversion.size()];
+		myNonPauseVarConversion = new String[nonPauseVarConversion.size()];
+		pauseVarConversion.toArray(myPauseVarConversion);
+		nonPauseVarConversion.toArray(myNonPauseVarConversion);
+	}
+
+	private void searchVars(String[] names, String[] vars,
+							ArrayList<String> found, ArrayList<String> foundConversion,
+							ArrayList<String> notFound, ArrayList<String> notFoundConversion) {
+		String[] tokens;
+		String searchVar;
+		String conversion;
+		boolean hasFound;
+		for (String sharedVar : vars) {
+			tokens = sharedVar.replaceAll("\\[|]", "").split("\\s+");
+			conversion = tokens[0].matches(PRIMITIVE_REGEX)?
+					String.format(".%sValue()",tokens[0]):
+					""; // object types dont need a conversion
+			searchVar = tokens[tokens.length - 1];
+			//search for the variable name
+			hasFound = false;
+			for (String name : names) {
+				if (searchVar.equals(name)) {
+					found.add(searchVar);
+					foundConversion.add(conversion);
+					//found it, so move on
+					hasFound = true;
+					break;
+				}
+			}
+			//didn't find it
+			if(!hasFound) {
+				notFound.add(searchVar);
+				notFoundConversion.add(conversion);
+			}
+		}
 	}
 
 	//creates code that *should* compile if things were written correctly
@@ -200,7 +218,9 @@ public class AlgorithmWriter
 		String initialize = modifyInitialize();
 		
 		//modify the algorithm to include pauses
-		String algorithm = modifyAlgorithm(myPauseVariables, myNonPauseVariables);
+		String algorithm = modifyAlgorithm(
+				myPauseVariables, myPauseVarConversion,
+				myNonPauseVariables, myNonPauseVarConversion);
 		String classStatement = myReader.getClassName();
 
 		//currently, the algorithm cannot have a user defined superclass
@@ -511,7 +531,8 @@ public class AlgorithmWriter
 	 * 
 	 * Currently, the vars have to be just the name, not including the type
 	 */
-	private String modifyAlgorithm(String[] pauseVars, String[] nonPauseVars)
+	private String modifyAlgorithm(String[] pauseVars, String[] pauseConverions,
+								   String[] nonPauseVars, String[] nonPauseConversions)
 	{
 		String modifiedCode = myReader.getAlgorithm();
 		//remove all comments
@@ -523,7 +544,7 @@ public class AlgorithmWriter
 		
 		//replace each step. marks step numbers temporarily with "%d"
 		//modifiedCode[index] = line.replaceAll("\\[(.+?)\\]", ".getVariable($1)");
-		for(String pauseVar: pauseVars)
+		for(int i = 0; i < pauseVars.length; i++)
 		{
 			//KNOWN BUG: because replace all does not find overlapping matches,
 			//if there is a nested read of the same variable, this breaks.
@@ -531,7 +552,7 @@ public class AlgorithmWriter
 			//also, nested array lookups in general will break, because regex can't match brackets
 
 			//check for mixed ops
-			if(hasMixedOp(modifiedCode, pauseVar))
+			if(hasMixedOp(modifiedCode, pauseVars[i]))
 				throw new IllegalArgumentException(
 						"++, --, += and other special assignments on shared vars cannot be parsed,\n"+
 								"because they implicitly involve both a read and a write.\n"+
@@ -542,19 +563,19 @@ public class AlgorithmWriter
 			//matches: variable[optional index] =
 			//				expression(does not contain equals) (semicolon or "){")
 			modifiedCode = modifiedCode.replaceAll(
-					VAR_SYMBOL_REGEX +pauseVar+WRITE_REGEX,
-					"pauseWrite\\(%d,"+pauseVar+"Var$1,$3\\)$4");
+					VAR_SYMBOL_REGEX +pauseVars[i]+WRITE_REGEX,
+					"pauseWrite\\(%d,"+pauseVars[i]+"Var$1,$3\\)$4");
 			
 			//replace all variable reads. makes sure to avoid writes already marked with Var
 			//by using negative lookahead
 			modifiedCode = modifiedCode.replaceAll(
-					VAR_SYMBOL_REGEX +pauseVar+READ_REGEX,
-					"pauseRead\\(%d,"+pauseVar+"Var$1\\)");
+					VAR_SYMBOL_REGEX +pauseVars[i]+READ_REGEX,
+					"pauseRead\\(%d,"+pauseVars[i]+"Var$1\\)"+pauseConverions[i]);
 		}
-		for(String nonPauseVar: nonPauseVars)
+		for(int i = 0; i < nonPauseVars.length; i++)
 		{
 			//check for mixed ops
-			if(hasMixedOp(modifiedCode, nonPauseVar))
+			if(hasMixedOp(modifiedCode, nonPauseVars[i]))
 				throw new IllegalArgumentException(
 						"++, --, += and other special assignments on member vars cannot be parsed,\n"+
 								"because they implicitly involve both a read and a write.\n"+
@@ -562,13 +583,13 @@ public class AlgorithmWriter
 								"\tnumber = number + 1;");
 			//replace all variable writes
 			modifiedCode = modifiedCode.replaceAll(
-					VAR_SYMBOL_REGEX +nonPauseVar+WRITE_REGEX,
-					nonPauseVar+"Var$1\\.set\\($3\\)$4");
+					VAR_SYMBOL_REGEX +nonPauseVars[i]+WRITE_REGEX,
+					nonPauseVars[i]+"Var$1\\.set\\($3\\)$4");
 			
 			//replace all variable reads.
 			modifiedCode = modifiedCode.replaceAll(
-					VAR_SYMBOL_REGEX +nonPauseVar+READ_REGEX,
-					nonPauseVar+"Var$1\\.get\\(\\)");
+					VAR_SYMBOL_REGEX +nonPauseVars[i]+READ_REGEX,
+					nonPauseVars[i]+"Var$1\\.get\\(\\)"+nonPauseConversions[i]);
 		}
 		modifiedCode = modifiedCode.replaceAll(
 				"CriticalSection\\s*\\(\\s*(\\d+)\\s*\\)",
