@@ -1,0 +1,22 @@
+import java.util.concurrent.Semaphore;
+public class AlgorithmName extends AlgorithmThread
+{
+	// shared variables can be accessed by all threads
+	shared int foo = N;
+	shared Semaphore sem = new Semaphore(1);
+
+	// non-shared variables belong to a single thread
+	int bar = ID;
+
+	// threads will loop through this method
+	public void algorithm()
+	{
+        try {
+            sem.acquire();
+        } catch(Exception e) {}
+		CriticalSection();
+        try {
+            sem.release();
+        } catch(Exception e) {}
+	}
+}
