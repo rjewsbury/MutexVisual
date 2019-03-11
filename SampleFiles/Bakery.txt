@@ -1,0 +1,32 @@
+class Bakery extends AlgorithmThread
+{
+	shared boolean[] c = new boolean[N];
+	shared int[] tk = new int[N];
+	int j, max;
+	
+	public void algorithm()
+	{
+		c[ID] = true;
+
+		//compute max token
+		max = 0;
+		for(j=0; j<N; j++) 
+		{
+			if(tk[j] > max)
+			{
+				max = tk[j];
+			}
+		}
+		tk[ID] = max + 1;
+
+		c[ID] = false;
+		
+		for(j=0; j < N; j++) 
+		{
+			while(c[j]);
+			while(tk[j] != 0 && (tk[j]<tk[ID] || (tk[j]==tk[ID] && j<ID)));	
+		}
+		CriticalSection();
+		tk[ID] = 0;
+	}
+}

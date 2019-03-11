@@ -1,0 +1,67 @@
+class GBA extends AlgorithmThread
+{
+	shared boolean[] c = new boolean[N];
+	shared int[] tk = new int[N];
+	shared int dir = 0;
+	shared int bound = 25;
+	int j, max, min;
+	
+	public void algorithm()
+	{
+		if(dir == 0) {
+			c[ID] = true;
+
+			//compute max token
+			max = 0;
+			for(j=0; j<N; j++) 
+			{
+				if(tk[j] > max)
+				{
+					max = tk[j];
+				}
+			}
+			tk[ID] = max + 1;
+
+			c[ID] = false;
+			
+			for(j=0; j < N; j++) 
+			{
+				while(c[j] == true);
+				while(tk[j] > 0 && (tk[j]<tk[ID] || (tk[j]==tk[ID] && j<ID)) || (tk[j]<0 && dir==0) );	
+			}
+			if(tk[ID] >= bound - N && dir == 0) 
+			{
+				dir = 1;
+			}
+		}
+		else {
+			c[ID] = true;
+
+			//compute min token
+			min = 10000;
+			for(j=0; j<N; j++) 
+			{
+				if(tk[j] < min)
+				{
+					min = tk[j];
+				}
+			}
+			tk[ID] = min - 1;
+
+			c[ID] = false;
+
+			for(j=0; j < N; j++) 
+			{
+				while(c[j] == true);
+				while(tk[j] < 0 && (tk[j]>tk[ID] || (tk[j]==tk[ID] && j>ID)) || (tk[j]>0 && dir==1) );	
+			}
+			if(tk[ID] <= N - bound && dir == 1) 
+			{
+				dir = 0;
+			}
+		}
+
+		CriticalSection();
+		tk[ID] = 0;
+	}
+}
